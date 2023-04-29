@@ -27,18 +27,12 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
 
     public static Random rand;
     public List<Boid> boids;
-    
-    int frame = 0;
+
     private Timer t = new Timer(1000/60, e->{
-        int i = 1;
-        frame++;
-        System.out.println("- FRAME " + frame + "-");
         for(Boid boid : boids) {
-            i++;
-            System.out.print(i + ": ");
-            System.out.print(boid.toString() + " -- ");
-            boid.ruleAvoidance(boids);
             boid.move();
+            boid.ruleAvoidance(boids);
+            System.out.println(boid.toString());
             repaint();
         }
     });
@@ -63,13 +57,21 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         
-        for(Boid boid : boids) {
-            // g2.rotate(boid.rot + (Math.PI), boid.x + boid.w / 2, boid.y + boid.h / 2);
-            // g2.fill(boid.getBounds());
-            // g2.rotate(-boid.rot - (Math.PI), boid.x + boid.w / 2, boid.y + boid.h / 2);
-            if(!first)
-                for(Point ray : boid.rays)
-                    g2.drawLine((int) boid.x, (int) boid.y, (int) ray.getX(), (int) ray.getY());
+        for(int i = 0; i < boids.size(); i++) {
+            Boid boid = boids.get(i);
+            g2.rotate(boid.rot + (Math.PI), boid.x + boid.w / 2, boid.y + boid.h / 2);
+            g2.fill(boid.getBounds());
+            g2.rotate(-boid.rot - (Math.PI), boid.x + boid.w / 2, boid.y + boid.h / 2);
+            // g2.drawString(boid.rot+"", (int) boid.x, (int) boid.y);
+            if(!first && i == 0) {
+                for(VisualRay ray : boid.rays) {
+                    double s = (255 * ray.strength);
+                    g2.setColor(new Color(0, 0, 0, (int) s));
+                    System.out.println(s);
+                    g2.drawLine((int) boid.x + boid.w / 2, (int) boid.y + boid.h / 2, ray.x, ray.y);
+                }
+                g2.setColor(Color.BLACK);
+            }
         }
         first = false;
     }

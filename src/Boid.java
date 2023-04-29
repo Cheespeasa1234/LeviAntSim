@@ -10,9 +10,10 @@ public class Boid {
     public double x, y; // x and y coordinates of the ant
     public int w, h; // width and height of the ant's bounding box
     public double rot; // rotation angle of the ant
-    public List<Point> rays;
+    public List<VisualRay> rays;
 
     public static int viewdist = 100;
+    public static double introvertedness = 1.5;
 
     public Boid(int x, int y) {
         w = 8;
@@ -20,19 +21,19 @@ public class Boid {
         this.x = x;
         this.y = y;
         this.rot = Math.toRadians(Game.rand.nextInt(0,360));
-        this.rays = new ArrayList<Point>();
+        this.rays = new ArrayList<VisualRay>();
         
     }
 
     public void move() {
 
-        
-        
         // find dx and dy to move
         double h = 2.0; // move 2 pixels
+        this.rot %= (Math.PI * 2);
         // get the angle in quarter 1
         double o = (h * Math.sin(rot));
         double a = (h * Math.cos(rot));
+        System.out.println("o/a:" + o + "/" + a); 
 
         // if out of bounds, move to the other side
         if(this.x + o < 0) {
@@ -52,6 +53,8 @@ public class Boid {
     public void ruleAvoidance(List<Boid> boids) {
         // get all boids within my viewdist
         this.rays.clear();
+        double changeTotal = 0;
+        int nearbyCount = 0;
         // for every boid:
         for(Boid b : boids) {
             if(b == this) continue;
@@ -64,13 +67,24 @@ public class Boid {
             );
             
             if(dist <= viewdist) {
+                nearbyCount++;
 
                 // get the other angle
                 double angle = Math.atan2(yDist, xDist);
-                this.rays.add(new Point((int)(this.x + xDist), (int)(this.y + yDist)));
+                
+                // get the urgency
+                double urgency = (100 - dist) / viewdist;
+                this.rays.add(new VisualRay((int)(this.x + xDist), (int)(this.y + yDist), urgency));
+                
+                // get the direction to avoid from
+                double dir = rot - angle;
+
+                double change = dir * urgency * introvertedness;
+                changeTotal += change;
 
             }
         }
+        this.rot += nearbyCount > 0 ? 0.05 * (changeTotal / (double) nearbyCount) : 0;
     }
 
     public Rectangle getBounds() {
