@@ -1,9 +1,9 @@
 public class VisualRay {
     public int x, y;
     public double strength;
-    public VisualRay(int x, int y, double strength) {
-        this.x = x;
-        this.y = y;
+    public VisualRay(double x, double y, double strength) {
+        this.x = (int) x;
+        this.y = (int) y;
         this.strength = strength;
     }
 }

@@ -12,8 +12,8 @@ public class Boid {
     public double rot; // rotation angle of the ant
     public List<VisualRay> rays;
 
-    public static int viewdist = 100;
-    public static double introvertedness = 1.5;
+    public static int viewdist = 50;
+    public static double introvertedness = 2.5;
 
     public Boid(int x, int y) {
         w = 8;
@@ -33,7 +33,6 @@ public class Boid {
         // get the angle in quarter 1
         double o = (h * Math.sin(rot));
         double a = (h * Math.cos(rot));
-        System.out.println("o/a:" + o + "/" + a); 
 
         // if out of bounds, move to the other side
         if(this.x + o < 0) {
@@ -48,11 +47,12 @@ public class Boid {
         }
         this.x += o;
         this.y += a;
+        this.rays.clear();
+        this.rays.add(new VisualRay(this.x + (o * viewdist / 2), this.y + (a * viewdist / 2), 1));
     }
     
     public void ruleAvoidance(List<Boid> boids) {
         // get all boids within my viewdist
-        this.rays.clear();
         double changeTotal = 0;
         int nearbyCount = 0;
         // for every boid:
@@ -67,24 +67,10 @@ public class Boid {
             );
             
             if(dist <= viewdist) {
-                nearbyCount++;
-
-                // get the other angle
-                double angle = Math.atan2(yDist, xDist);
-                
-                // get the urgency
-                double urgency = (100 - dist) / viewdist;
-                this.rays.add(new VisualRay((int)(this.x + xDist), (int)(this.y + yDist), urgency));
-                
-                // get the direction to avoid from
-                double dir = rot - angle;
-
-                double change = dir * urgency * introvertedness;
-                changeTotal += change;
-
+                double angle = Math.atan(yDist / xDist);
+                // this.rays.add(new VisualRay(b.x + b.w / 2, b.y + b.h / 2, dist)); 
             }
         }
-        this.rot += nearbyCount > 0 ? 0.05 * (changeTotal / (double) nearbyCount) : 0;
     }
 
     public Rectangle getBounds() {

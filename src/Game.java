@@ -12,13 +12,16 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Consumer;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.JSlider;
 
 public class Game extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
 
@@ -28,11 +31,32 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
     public static Random rand;
     public List<Boid> boids;
 
+
+    private static final int triangleScale = 5;
+    private static final int[] triangleXValues = {
+        0,
+        triangleScale,
+        triangleScale * 2,
+    };
+    private static final int[] triangleYValues = {
+        0,
+        triangleScale * 2,
+        0,
+    };
+
+    public static int[] transformArray(int[] arr, int add) {
+        int[] transformed = new int[arr.length];
+        for(int i = 0; i < arr.length; i++) {
+            transformed[i] = arr[i] + add;
+        }
+        return transformed;
+    }
+
+
     private Timer t = new Timer(1000/60, e->{
         for(Boid boid : boids) {
             boid.move();
             boid.ruleAvoidance(boids);
-            System.out.println(boid.toString());
             repaint();
         }
     });
@@ -59,18 +83,13 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
         
         for(int i = 0; i < boids.size(); i++) {
             Boid boid = boids.get(i);
-            g2.rotate(boid.rot + (Math.PI), boid.x + boid.w / 2, boid.y + boid.h / 2);
-            g2.fill(boid.getBounds());
-            g2.rotate(-boid.rot - (Math.PI), boid.x + boid.w / 2, boid.y + boid.h / 2);
-            // g2.drawString(boid.rot+"", (int) boid.x, (int) boid.y);
-            if(!first && i == 0) {
-                for(VisualRay ray : boid.rays) {
-                    double s = (255 * ray.strength);
-                    g2.setColor(new Color(0, 0, 0, (int) s));
-                    System.out.println(s);
-                    g2.drawLine((int) boid.x + boid.w / 2, (int) boid.y + boid.h / 2, ray.x, ray.y);
-                }
-                g2.setColor(Color.BLACK);
+            
+            g2.rotate(-boid.rot, boid.x + boid.w / 2, boid.y + boid.h / 2);
+            // g2.fill(boid.getBounds());
+            g2.fillPolygon(transformArray(triangleXValues, (int) boid.x), transformArray(triangleYValues, (int) boid.y), 3);
+            g2.rotate(boid.rot, boid.x + boid.w / 2, boid.y + boid.h / 2);
+            for(VisualRay ray : boid.rays) {
+                g2.drawLine((int) boid.x + boid.w / 2, (int) boid.y + boid.h / 2, ray.x, ray.y);
             }
         }
         first = false;
