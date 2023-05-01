@@ -1,3 +1,4 @@
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -53,12 +54,13 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
     }
 
 
-    private Timer t = new Timer(1000/60, e->{
+    private Timer t = new Timer(1000/20, e->{
         for(Boid boid : boids) {
-            boid.move();
             boid.ruleAvoidance(boids);
+            boid.move();
             repaint();
         }
+        System.out.println("Rendered!");
     });
     
     public Game() {
@@ -70,7 +72,7 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
 
         boids = new ArrayList<Boid>();
         rand = new Random();
-        for(int i = 0; i < 100; i++) {
+        for(int i = 0; i < 20; i++) {
             boids.add(new Boid(rand.nextInt(100, 200), rand.nextInt(100,200)));
         }
         t.start();
@@ -86,11 +88,12 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
             
             g2.rotate(-boid.rot, boid.x + boid.w / 2, boid.y + boid.h / 2);
             // g2.fill(boid.getBounds());
+            g2.setColor(Color.BLACK);
             g2.fillPolygon(transformArray(triangleXValues, (int) boid.x), transformArray(triangleYValues, (int) boid.y), 3);
+            g2.drawLine((int) boid.x + boid.w / 2, (int) boid.y + boid.h / 2)
             g2.rotate(boid.rot, boid.x + boid.w / 2, boid.y + boid.h / 2);
-            for(VisualRay ray : boid.rays) {
-                g2.drawLine((int) boid.x + boid.w / 2, (int) boid.y + boid.h / 2, ray.x, ray.y);
-            }
+            
+            
         }
         first = false;
     }
