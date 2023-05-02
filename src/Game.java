@@ -32,37 +32,18 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
     public static Random rand;
     public List<Boid> boids;
 
+    
 
-    private static final int triangleScale = 5;
-    private static final int[] triangleXValues = {
-        0,
-        triangleScale,
-        triangleScale * 2,
-    };
-    private static final int[] triangleYValues = {
-        0,
-        triangleScale * 2,
-        0,
-    };
-
-    public static int[] transformArray(int[] arr, int add) {
-        int[] transformed = new int[arr.length];
-        for(int i = 0; i < arr.length; i++) {
-            transformed[i] = arr[i] + add;
-        }
-        return transformed;
-    }
-
-
-    private Timer t = new Timer(1000/20, e->{
-        for(Boid boid : boids) {
-            boid.ruleAvoidance(boids);
+    private Timer t = new Timer(1000 / 20, e -> {
+        for (Boid boid : boids) {
+            boid.loadVisible(boids);
+            boid.ruleSeparation();
             boid.move();
             repaint();
         }
         System.out.println("Rendered!");
     });
-    
+
     public Game() {
         this.setFocusable(true);
         this.setBackground(Color.WHITE);
@@ -72,13 +53,14 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
 
         boids = new ArrayList<Boid>();
         rand = new Random();
-        for(int i = 0; i < 20; i++) {
-            boids.add(new Boid(rand.nextInt(100, 200), rand.nextInt(100,200)));
+        for (int i = 0; i < 20; i++) {
+            boids.add(new Boid(rand.nextInt(100, 200), rand.nextInt(100, 200)));
         }
         t.start();
     }
 
     public boolean first = true;
+
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
@@ -89,10 +71,12 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
             g2.rotate(-boid.rot, boid.x + boid.w / 2, boid.y + boid.h / 2);
             // g2.fill(boid.getBounds());
             g2.setColor(Color.BLACK);
-            g2.fillPolygon(transformArray(triangleXValues, (int) boid.x), transformArray(triangleYValues, (int) boid.y), 3);
-            g2.drawLine((int) boid.x + boid.w / 2, (int) boid.y + boid.h / 2)
-            g2.rotate(boid.rot, boid.x + boid.w / 2, boid.y + boid.h / 2);
+            g2.fillPolygon(Geometry.transformArray(Geometry.triangleXValues, (int) boid.x), Geometry.transformArray(Geometry.triangleYValues, (int) boid.y), 3);
             
+            g2.rotate(boid.rot, boid.x + boid.w / 2, boid.y + boid.h / 2);
+            for(Boid visible : boid.cansee) {
+                g2.drawLine((int)boid.x, (int)boid.y, (int)visible.x, (int)visible.y);
+            }
             
         }
         first = false;
@@ -101,34 +85,43 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
     @Override
     public void keyPressed(KeyEvent e) {
     }
+
     @Override
     public void keyReleased(KeyEvent e) {
     }
+
     @Override
     public void keyTyped(KeyEvent e) {
     }
+
     @Override
     public void mouseDragged(MouseEvent e) {
     }
+
     @Override
     public void mouseMoved(MouseEvent e) {
     }
+
     @Override
     public void mouseClicked(MouseEvent e) {
     }
+
     @Override
     public void mouseEntered(MouseEvent e) {
     }
+
     @Override
     public void mouseExited(MouseEvent e) {
     }
+
     @Override
     public void mousePressed(MouseEvent e) {
     }
+
     @Override
     public void mouseReleased(MouseEvent e) {
     }
-    
+
     /* METHODS FOR CREATING JFRAME AND JPANEL */
 
     public Dimension getPreferredSize() {
@@ -136,6 +129,7 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
     }
 
     public static Game game;
+
     public static void createAndShowGUI() {
         JFrame frame = new JFrame("You're Mother");
         game = new Game();
