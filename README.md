@@ -18,3 +18,4 @@ A boid exists in 2d or 3d space, and when all the boids follow these simple rule
 - [Sebastian Lague: Complex Behavior from Simple Rules: 3 Simulations](https://youtu.be/kzwT3wQWAHE_)
 - [Seb O: Emergent Behavior Simulations](https://projects.thinkglobalschool.org/emergent-behavior-simulations/)
 - [Pezza's Work: C++ Ants Simulation 1, First Approach](https://youtu.be/81GQNPJip2Y)
+- [dante: How do Boids Work? A Flocking Simulation](https://www.youtube.com/watch?v=QbUPfMXXQIY)
