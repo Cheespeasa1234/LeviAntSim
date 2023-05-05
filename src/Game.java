@@ -16,7 +16,8 @@ import java.util.Random;
 import java.util.function.Consumer;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-
+import java.awt.event.MouseMotionAdapter;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -32,16 +33,23 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
     public static Random rand;
     public List<Boid> boids;
 
-    
+    private boolean doSep = true, doAli = true, doCoh = true;
+    private int displayRadius = 100;
 
     private Timer t = new Timer(1000 / 20, e -> {
         for (Boid boid : boids) {
             boid.loadVisible(boids);
-            boid.ruleSeparation();
+            if (boid.cansee.size() > 0) {
+                if (doSep)
+                    boid.ruleSeparation();
+                if (doAli)
+                    boid.ruleAlignment();
+                if (doCoh)
+                    boid.ruleCohesion();
+            }
             boid.move();
             repaint();
         }
-        System.out.println("Rendered!");
     });
 
     public Game() {
@@ -51,9 +59,53 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
         this.addMouseMotionListener(this);
         this.addKeyListener(this);
 
+        JSlider VIEWDISTANCESlider = new JSlider();
+        JLabel VIEWDISTANCELabel = new JLabel("0.5");
+        VIEWDISTANCESlider.setMaximum(500);
+        VIEWDISTANCESlider.addMouseMotionListener(
+                new MouseMotionAdapter() {
+                    @Override
+                    public void mouseDragged(MouseEvent e) {
+                        Boid.VIEWDISTANCE = VIEWDISTANCESlider.getValue();
+                        VIEWDISTANCELabel.setText(Boid.VIEWDISTANCE + "");
+                        displayRadius = 1000;
+                    }
+                });
+
+        JCheckBox doSepBox = new JCheckBox();
+        JLabel doSepLabel = new JLabel("sep: " + doSep);
+        doSepBox.addChangeListener(e -> {
+            doSep = doSepBox.isSelected();
+            doSepLabel.setText("sep: " + doSep);
+        });
+
+        JCheckBox doAliBox = new JCheckBox();
+        JLabel doAliLabel = new JLabel("ali: " + doAli);
+        doAliBox.addChangeListener(e -> {
+            doAli = doAliBox.isSelected();
+            doAliLabel.setText("ali: " + doAli);
+        });
+
+        JCheckBox doCohBox = new JCheckBox();
+        JLabel doCohLabel = new JLabel("coh: " + doCoh);
+        doCohBox.addChangeListener(e -> {
+            doCoh = doCohBox.isSelected();
+            doCohLabel.setText("coh: " + doCoh);
+        });
+
+        this.add(VIEWDISTANCESlider);
+        this.add(VIEWDISTANCELabel);
+
+        this.add(doSepBox);
+        this.add(doSepLabel);
+        this.add(doAliBox);
+        this.add(doAliLabel);
+        this.add(doCohBox);
+        this.add(doCohLabel);
+
         boids = new ArrayList<Boid>();
         rand = new Random();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 50; i++) {
             boids.add(new Boid(rand.nextInt(100, 200), rand.nextInt(100, 200)));
         }
         t.start();
@@ -64,20 +116,29 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
-        
-        for(int i = 0; i < boids.size(); i++) {
+
+        for (int i = 0; i < boids.size(); i++) {
             Boid boid = boids.get(i);
-            
+
             g2.rotate(-boid.rot, boid.x + boid.w / 2, boid.y + boid.h / 2);
             // g2.fill(boid.getBounds());
             g2.setColor(Color.BLACK);
-            g2.fillPolygon(Geometry.transformArray(Geometry.triangleXValues, (int) boid.x), Geometry.transformArray(Geometry.triangleYValues, (int) boid.y), 3);
-            
+            g2.fillPolygon(Geometry.transformArray(Geometry.triangleXValues, (int) boid.x),
+                    Geometry.transformArray(Geometry.triangleYValues, (int) boid.y), 3);
+
             g2.rotate(boid.rot, boid.x + boid.w / 2, boid.y + boid.h / 2);
-            for(Boid visible : boid.cansee) {
-                g2.drawLine((int)boid.x, (int)boid.y, (int)visible.x, (int)visible.y);
+            g2.setColor(Color.GREEN);
+            g2.fillOval((int) boid.centerOfMass.getX() - 2, (int) boid.centerOfMass.getY() - 2, 4, 4);
+            // for(Boid visible : boid.cansee) {
+            // g2.drawLine((int)boid.x, (int)boid.y, (int)visible.x, (int)visible.y);
+            // }
+            if (displayRadius > 0) {
+                displayRadius--;
+                g2.setColor(Color.RED);
+                g2.drawOval((int)(boid.x - Boid.VIEWDISTANCE), (int)(boid.y
+                        - Boid.VIEWDISTANCE), Boid.VIEWDISTANCE * 2, Boid.VIEWDISTANCE * 2);
             }
-            
+
         }
         first = false;
     }
@@ -149,5 +210,4 @@ public class Game extends JPanel implements MouseListener, MouseMotionListener, 
             }
         });
     }
-
 }
